@@ -5,7 +5,7 @@ Specification: http://patsa.org/sites/default/files/Coding_2021.pdf
 
 ## Building
 ```bash
-# Install All Packages (Entirely Building Typescript)
+# Install All Packages (Typescript)
 npm install
 
 # Build and Run
