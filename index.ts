@@ -1,6 +1,5 @@
 import fs = require("fs"); // FileSystem (Read From Input) | Default Node Library <https://nodejs.org/api/fs.html>
 import readline = require("readline"); // Readline (Change File Input) | Default Node Library <https://nodejs.org/api/readline.html>
-import { start } from "repl";
 
 const rl = readline.createInterface({
     input: process.stdin,
