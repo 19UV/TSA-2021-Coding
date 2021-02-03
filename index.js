@@ -87,7 +87,7 @@ rl.question(`File Name (${FILE_DEFAULT}): `, (file_name) => {
             });
             console.log("");
             
-            protein_strands = [...new Set(protein_strands)]; // Remove Duplicates (JS Sets remove duplicate numbers)
+            protein_strands = [...new Set(protein_strands)]; // Remove Duplicates (JS Sets remove duplicate values)
             protein_strands.forEach((strand) => {
                 var proteins = strand.match(/.{3}/g) || [""]; // Split into array of elements of exactly 3 characters
                 var response = "";
