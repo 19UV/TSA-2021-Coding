@@ -1,3 +1,4 @@
+import { O_RDONLY } from "constants";
 import fs = require("fs"); // FileSystem (Read From Input) | Default Node Library <https://nodejs.org/api/fs.html>
 import readline = require("readline"); // Readline (Change File Input) | Default Node Library <https://nodejs.org/api/readline.html>
 
@@ -73,8 +74,6 @@ rl.question(`File Name (${FILE_DEFAULT}): `, (file_name: string) => {
 
         if(DEBUG_MODE) console.log("Whole File:\n" + file_data);
 
-        var exons: Array<string> = [];
-
         starter_indexes.forEach((start_location: RegexLocation) => {
             const start_index: number = start_location.index + (start_location.promoter[1] == "A" ? 6 : 2);
             const temp_end_indexes: Array<RegexLocation> = end_indexes.filter((loc: RegexLocation) => start_location.index <= loc.index); // Remove Terminators Before Promoter
@@ -86,7 +85,8 @@ rl.question(`File Name (${FILE_DEFAULT}): `, (file_name: string) => {
                 substring = substring.replace(/T/g, 'U'); // "For each transcribed substring, convert the Thymines to Uracils."
                 
                 if(DEBUG_MODE) console.log(" ".repeat(start_index) + substring);
-
+                
+                /*
                 const intron_starts: Array<RegexLocation> = find_all_indexes(substring, INTRON_START);
                 const intron_ends: Array<RegexLocation> = find_all_indexes(substring, INTRON_END);
                 
@@ -99,6 +99,23 @@ rl.question(`File Name (${FILE_DEFAULT}): `, (file_name: string) => {
 
                     if(DEBUG_MODE) console.log("  " + substr);
                 });
+                */
+
+                
+                var exon_string: string = substring.replace(/GU[AG]AGU[AGCU]+?CAG/g, "");
+                const exon_string_length: number = exon_string.length;
+                const init_indexes: Array<RegexLocation> = find_all_indexes(exon_string, /AUG/g);
+                init_indexes.forEach((index: RegexLocation) => {
+                    for(var i: number = index.index; i<exon_string_length; i += 3) {
+                        if(["UGA", "UAA", "UAG"].includes(exon_string.substring(i, i+3))) {
+                            protein_strands.push(exon_string.substring(index.index, i));
+                            console.log(exon_string.substring(index.index, i).match(/.{3}/g)?.join(" "));
+                            break;
+                        }
+                    }
+                });
+
+                /*
                 var exons: Array<string> = substring.replace(/GU[AG]AGU[AGCU]+?CAG/g, "|").split("|");
                 const exon_count: number = exons.length;
                 for(var i: number = 0;i<exon_count;i++) {
@@ -118,17 +135,22 @@ rl.question(`File Name (${FILE_DEFAULT}): `, (file_name: string) => {
 
                     protein_strands.push(temp_strand.substring(0, end));
                 }
+                */
             });
 
             protein_strands.forEach((strand: string) => {
                 var proteins: Array<string> = strand.match(/.{3}/g) || [""];
                 var response: string = "";
+                var mass: number = 0;
+                var charge: number = 0;
                 proteins.forEach((protein: string) => {
                     var found_codon: Codon = CodonTable.find((e: Codon) => e.codon == protein) || {} as Codon;
                     response += found_codon.amino_acid;
+                    mass += found_codon.mass || 0;
+                    charge += found_codon.charge || 0;
                     // console.log(protein, found_codon);
                 });
-                console.log(response);
+                console.log(response, mass.toFixed(4) + "u", charge + "e");
             });
         });
     });
