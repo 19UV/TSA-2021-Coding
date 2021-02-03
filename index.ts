@@ -23,23 +23,72 @@ interface Codon {
     charge?: number; // Ex: 0
 };
 
-const CodonTable: Array<Codon> = [];
-const codon_file_data: Array<string> = fs.readFileSync("./translation_table.txt", {"encoding": "utf-8"}) // Read From File (it is a small file, so sync is sufficient)
-                                       .replace(/(\r)/g,"") // Add Windows support
-                                       .split('\n'); // Split file into parseable data
-
-codon_file_data.forEach((line: string) => {
-    let line_data: Array<string> = line.split(" ");
-    let temp_codon: Codon = {
-        codon: line_data[0],
-        amino_acid: line_data[1],
-    };
-    if(line_data[1] != "STOP") {
-        temp_codon.mass = parseFloat(line_data[2]);
-        temp_codon.charge = parseInt(line_data[3]);
-    }
-    CodonTable.push(temp_codon);
-});
+const CodonTable: Array<Codon> = [ // Added as to not require external files
+    {codon: "UUU", amino_acid: "Phe", "mass": 147.1766, charge:  0},
+    {codon: "UUC", amino_acid: "Phe", "mass": 147.1766, charge:  0},
+    {codon: "UUA", amino_acid: "Leu", "mass": 113.1594, charge:  0},
+    {codon: "UUG", amino_acid: "Leu", "mass": 113.1594, charge:  0},
+    {codon: "UCU", amino_acid: "Ser", "mass":  87.0782, charge:  0},
+    {codon: "UCC", amino_acid: "Ser", "mass":  87.0782, charge:  0},
+    {codon: "UCA", amino_acid: "Ser", "mass":  87.0782, charge:  0},
+    {codon: "UCG", amino_acid: "Ser", "mass":  87.0782, charge:  0},
+    {codon: "UAU", amino_acid: "Tyr", "mass": 163.1760, charge:  0},
+    {codon: "UAC", amino_acid: "Tyr", "mass": 163.1760, charge:  0},
+    {codon: "UAG", amino_acid: "STOP"},
+    {codon: "UAA", amino_acid: "STOP"},
+    {codon: "UGU", amino_acid: "Cys", "mass": 103.1388, charge:  0},
+    {codon: "UGC", amino_acid: "Cys", "mass": 103.1388, charge:  0},
+    {codon: "UGA", amino_acid: "STOP"},
+    {codon: "UGG", amino_acid: "Trp", "mass": 186.2132, charge:  0},
+    {codon: "CUU", amino_acid: "Leu", "mass": 113.1594, charge:  0},
+    {codon: "CUC", amino_acid: "Leu", "mass": 113.1594, charge:  0},
+    {codon: "CUA", amino_acid: "Leu", "mass": 113.1594, charge:  0},
+    {codon: "CUG", amino_acid: "Leu", "mass": 113.1594, charge:  0},
+    {codon: "CCU", amino_acid: "Pro", "mass":  97.1167, charge:  0},
+    {codon: "CCC", amino_acid: "Pro", "mass":  97.1167, charge:  0},
+    {codon: "CCA", amino_acid: "Pro", "mass":  97.1167, charge:  0},
+    {codon: "CCG", amino_acid: "Pro", "mass":  97.1167, charge:  0},
+    {codon: "CAU", amino_acid: "His", "mass": 137.1411, charge:  1},
+    {codon: "CAC", amino_acid: "His", "mass": 137.1411, charge:  1},
+    {codon: "CAA", amino_acid: "Gln", "mass": 128.1307, charge:  0},
+    {codon: "CAG", amino_acid: "Gln", "mass": 128.1307, charge:  0},
+    {codon: "CGU", amino_acid: "Arg", "mass": 156.1875, charge:  1},
+    {codon: "CGC", amino_acid: "Arg", "mass": 156.1875, charge:  1},
+    {codon: "CGA", amino_acid: "Arg", "mass": 156.1875, charge:  1},
+    {codon: "CGG", amino_acid: "Arg", "mass": 156.1875, charge:  1},
+    {codon: "AUU", amino_acid: "Ile", "mass": 113.1594, charge:  0},
+    {codon: "AUC", amino_acid: "Ile", "mass": 113.1594, charge:  0},
+    {codon: "AUA", amino_acid: "Ile", "mass": 113.1594, charge:  0},
+    {codon: "AUG", amino_acid: "Met", "mass": 131.1926, charge:  0},
+    {codon: "ACU", amino_acid: "Thr", "mass": 101.1051, charge:  0},
+    {codon: "ACC", amino_acid: "Thr", "mass": 101.1051, charge:  0},
+    {codon: "ACA", amino_acid: "Thr", "mass": 101.1051, charge:  0},
+    {codon: "ACG", amino_acid: "Thr", "mass": 101.1051, charge:  0},
+    {codon: "AAU", amino_acid: "Asn", "mass": 114.1038, charge:  0},
+    {codon: "AAC", amino_acid: "Asn", "mass": 114.1038, charge:  0},
+    {codon: "AAA", amino_acid: "Lys", "mass": 128.1741, charge:  1},
+    {codon: "AAG", amino_acid: "Lys", "mass": 128.1741, charge:  1},
+    {codon: "AGU", amino_acid: "Ser", "mass":  87.0782, charge:  0},
+    {codon: "AGC", amino_acid: "Ser", "mass":  87.0782, charge:  0},
+    {codon: "AGA", amino_acid: "Arg", "mass": 156.1875, charge:  1},
+    {codon: "AGG", amino_acid: "Arg", "mass": 156.1875, charge:  1},
+    {codon: "GUU", amino_acid: "Val", "mass":  99.1326, charge:  0},
+    {codon: "GUC", amino_acid: "Val", "mass":  99.1326, charge:  0},
+    {codon: "GUA", amino_acid: "Val", "mass":  99.1326, charge:  0},
+    {codon: "GUG", amino_acid: "Val", "mass":  99.1326, charge:  0},
+    {codon: "GCU", amino_acid: "Ala", "mass":  71.0788, charge:  0},
+    {codon: "GCC", amino_acid: "Ala", "mass":  71.0788, charge:  0},
+    {codon: "GCA", amino_acid: "Ala", "mass":  71.0788, charge:  0},
+    {codon: "GCG", amino_acid: "Ala", "mass":  71.0788, charge:  0},
+    {codon: "GAU", amino_acid: "Asp", "mass": 115.0886, charge: -1},
+    {codon: "GAC", amino_acid: "Asp", "mass": 115.0886, charge: -1},
+    {codon: "GAA", amino_acid: "Glu", "mass": 129.1155, charge: -1},
+    {codon: "GAG", amino_acid: "Glu", "mass": 129.1155, charge: -1},
+    {codon: "GGU", amino_acid: "Gly", "mass":  57.0519, charge:  0},
+    {codon: "GGC", amino_acid: "Gly", "mass":  57.0519, charge:  0},
+    {codon: "GGA", amino_acid: "Gly", "mass":  57.0519, charge:  0},
+    {codon: "GGG", amino_acid: "Gly", "mass":  57.0519, charge:  0}
+];
 
 function find_all_indexes(str: string, exp: RegExp): Array<RegexLocation> {
     var resp: Array<RegexLocation> = [];
