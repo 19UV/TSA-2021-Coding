@@ -90,6 +90,28 @@ const CodonTable: Array<Codon> = [ // Added as to not require external files
     {codon: "GGG", amino_acid: "Gly", "mass":  57.0519, charge:  0}
 ];
 
+/*
+// To read from external translation table
+const CodonTable: Array<Codon> = [];
+const codon_file_data: Array<string> = fs.readFileSync("./translation_table.txt", {"encoding": "utf-8"}) // Read From File (it is a small file, so sync is sufficient)
+                                       .replace(/(\r)/g,"") // Add Windows support
+                                       .split('\n'); // Split file into parseable data
+
+codon_file_data.forEach((line: string) => {
+    let line_data: Array<string> = line.split(" ");
+    let temp_codon: Codon = {
+        codon: line_data[0],
+        amino_acid: line_data[1],
+    };
+    if(line_data[1] != "STOP") {
+        temp_codon.mass = parseFloat(line_data[2]);
+        temp_codon.charge = parseInt(line_data[3]);
+    }
+    CodonTable.push(temp_codon);
+});
+
+*/
+
 function find_all_indexes(str: string, exp: RegExp): Array<RegexLocation> {
     var resp: Array<RegexLocation> = [];
     var result;
