@@ -4,6 +4,7 @@ import readline = require("readline"); // Readline (Change File Input) | Default
 const rl = readline.createInterface( { input: process.stdin, output: process.stdout } );
 
 const FILE_DEFAULT: string = "input.txt";
+const DEBUG_MODE: boolean = true;
 
 const START_PROMOTER_1: RegExp = new RegExp("(TA){2}A{2}", "gi"); // TATAAA
 const START_PROMOTER_2: RegExp = new RegExp("[CT]{2}A[ATGC][AT][CT]{2}", "gi"); // (C/T)(C/T)A(A/T/G/C)(A/T)(C/T)(C/T)
@@ -70,27 +71,64 @@ rl.question(`File Name (${FILE_DEFAULT}): `, (file_name: string) => {
         const starter_indexes: Array<RegexLocation> = find_all_indexes(file_data, START_PROMOTER);
         const end_indexes: Array<RegexLocation> = find_all_indexes(file_data, END_TERMINATOR);
 
-        console.log("Whole File:", file_data);
+        if(DEBUG_MODE) console.log("Whole File:\n" + file_data);
+
+        var exons: Array<string> = [];
 
         starter_indexes.forEach((start_location: RegexLocation) => {
             const start_index: number = start_location.index + (start_location.promoter[1] == "A" ? 6 : 2);
             const temp_end_indexes: Array<RegexLocation> = end_indexes.filter((loc: RegexLocation) => start_location.index <= loc.index); // Remove Terminators Before Promoter
+
+            var protein_strands: Array<string> = [];
+
             temp_end_indexes.forEach((end_location: RegexLocation) => {
-                var substring: string = file_data.substring(start_index, end_location.index);
-                substring = substring.replace(/T/gi, 'U'); // "For each transcribed substring, convert the Thymines to Uracils."
+                var substring: string = file_data.substring(start_index, end_location.index + 26);
+                substring = substring.replace(/T/g, 'U'); // "For each transcribed substring, convert the Thymines to Uracils."
+                
+                if(DEBUG_MODE) console.log(" ".repeat(start_index) + substring);
 
                 const intron_starts: Array<RegexLocation> = find_all_indexes(substring, INTRON_START);
                 const intron_ends: Array<RegexLocation> = find_all_indexes(substring, INTRON_END);
                 
-                console.log("----- DATA BETWEEN INTRONS -----");
+                if(DEBUG_MODE) console.log("----- DATA BETWEEN INTRONS -----");
                 intron_starts.forEach((intron_location: RegexLocation) => {
                     var end_target: RegexLocation = intron_ends.filter((intron: RegexLocation) => intron.index > intron_location.index)[0];
                     if(!end_target) return;
 
                     const substr = substring.substring(intron_location.index + 6, end_target.index); // Past Intron Start
 
-                    console.log("  " + substr);
+                    if(DEBUG_MODE) console.log("  " + substr);
                 });
+                var exons: Array<string> = substring.replace(/GU[AG]AGU[AGCU]+?CAG/g, "|").split("|");
+                const exon_count: number = exons.length;
+                for(var i: number = 0;i<exon_count;i++) {
+                    var temp_strand: string = exons.slice(0,i+1).join("");
+                    var start: number = (/AUG/g.exec(temp_strand))?.index || 0;
+                    var end: number = temp_strand.length - start;
+                    temp_strand = temp_strand.substring(start);
+                    
+
+                    const strand_length: number = temp_strand.length;
+                    for(var j: number = 0; j < strand_length; j += 3) {
+                        if(temp_strand.substring(j,j+3) == "UGA") {
+                            end = j;
+                            break;
+                        }
+                    }
+
+                    protein_strands.push(temp_strand.substring(0, end));
+                }
+            });
+
+            protein_strands.forEach((strand: string) => {
+                var proteins: Array<string> = strand.match(/.{3}/g) || [""];
+                var response: string = "";
+                proteins.forEach((protein: string) => {
+                    var found_codon: Codon = CodonTable.find((e: Codon) => e.codon == protein) || {} as Codon;
+                    response += found_codon.amino_acid;
+                    // console.log(protein, found_codon);
+                });
+                console.log(response);
             });
         });
     });
