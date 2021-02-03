@@ -5,7 +5,7 @@ import readline = require("readline"); // Readline (Change File Input) | Default
 const rl = readline.createInterface( { input: process.stdin, output: process.stdout } );
 
 const FILE_DEFAULT: string = "input.txt";
-const DEBUG_MODE: boolean = true;
+const DEBUG_MODE: boolean = false;
 
 const START_PROMOTER_1: RegExp = new RegExp("(TA){2}A{2}", "gi"); // TATAAA
 const START_PROMOTER_2: RegExp = new RegExp("[CT]{2}A[ATGC][AT][CT]{2}", "gi"); // (C/T)(C/T)A(A/T/G/C)(A/T)(C/T)(C/T)
@@ -68,6 +68,7 @@ rl.question(`File Name (${FILE_DEFAULT}): `, (file_name: string) => {
         }
         file_data = file_data.toUpperCase();
         file_data = file_data.replace(/[(\r)(\n) ]/g, ""); // Convert file into one line, remove carrage returns (Windows Support), and remove whitespace
+        file_data = file_data.replace(/^[ATGCU]/g, "");
 
         const starter_indexes: Array<RegexLocation> = find_all_indexes(file_data, START_PROMOTER);
         const end_indexes: Array<RegexLocation> = find_all_indexes(file_data, END_TERMINATOR);
@@ -87,56 +88,41 @@ rl.question(`File Name (${FILE_DEFAULT}): `, (file_name: string) => {
                 if(DEBUG_MODE) console.log(" ".repeat(start_index) + substring);
                 
                 /*
-                const intron_starts: Array<RegexLocation> = find_all_indexes(substring, INTRON_START);
-                const intron_ends: Array<RegexLocation> = find_all_indexes(substring, INTRON_END);
-                
-                if(DEBUG_MODE) console.log("----- DATA BETWEEN INTRONS -----");
-                intron_starts.forEach((intron_location: RegexLocation) => {
-                    var end_target: RegexLocation = intron_ends.filter((intron: RegexLocation) => intron.index > intron_location.index)[0];
-                    if(!end_target) return;
-
-                    const substr = substring.substring(intron_location.index + 6, end_target.index); // Past Intron Start
-
-                    if(DEBUG_MODE) console.log("  " + substr);
-                });
-                */
-
-                
                 var exon_string: string = substring.replace(/GU[AG]AGU[AGCU]+?CAG/g, "");
                 const exon_string_length: number = exon_string.length;
+                console.log(exon_string);
                 const init_indexes: Array<RegexLocation> = find_all_indexes(exon_string, /AUG/g);
                 init_indexes.forEach((index: RegexLocation) => {
                     for(var i: number = index.index; i<exon_string_length; i += 3) {
                         if(["UGA", "UAA", "UAG"].includes(exon_string.substring(i, i+3))) {
                             protein_strands.push(exon_string.substring(index.index, i));
-                            console.log(exon_string.substring(index.index, i).match(/.{3}/g)?.join(" "));
+                            if (DEBUG_MODE) console.log(exon_string.substring(index.index, i).match(/.{3}/g)?.join(" "));
                             break;
                         }
                     }
                 });
-
-                /*
-                var exons: Array<string> = substring.replace(/GU[AG]AGU[AGCU]+?CAG/g, "|").split("|");
-                const exon_count: number = exons.length;
-                for(var i: number = 0;i<exon_count;i++) {
-                    var temp_strand: string = exons.slice(0,i+1).join("");
-                    var start: number = (/AUG/g.exec(temp_strand))?.index || 0;
-                    var end: number = temp_strand.length - start;
-                    temp_strand = temp_strand.substring(start);
-                    
-
-                    const strand_length: number = temp_strand.length;
-                    for(var j: number = 0; j < strand_length; j += 3) {
-                        if(temp_strand.substring(j,j+3) == "UGA") {
-                            end = j;
-                            break;
-                        }
-                    }
-
-                    protein_strands.push(temp_strand.substring(0, end));
-                }
                 */
+
+                
+                var exons: Array<string> = substring.replace(/GU[AG]AGU[AGCU]+?CAG/g,"|").split("|");
+                const possible: number = Math.pow(2, exons.length);
+                for(var i: number = 0; i < possible; i++) {
+                    var curr_string: string = exons.map((val: string, ind: number) => ((i>>ind)&1)?val:"").join("");
+                    const curr_string_length: number = curr_string.length;
+                    const locations: Array<RegexLocation> = find_all_indexes(curr_string, /AUG/g);
+                    locations.forEach((loc: RegexLocation) => {
+                        for(var j: number = loc.index; j < curr_string_length; j += 3) {
+                            if(["UGA", "UAA", "UAG"].includes(curr_string.substring(j, j+3))) {
+                                protein_strands.push(curr_string.substring(loc.index, j));
+                                if (DEBUG_MODE) console.log(curr_string.substring(loc.index, j).match(/.{3}/g)?.join(" "));
+                                break;
+                            }
+                        }
+                    });
+                }
             });
+
+            protein_strands = [...new Set(protein_strands)];
 
             protein_strands.forEach((strand: string) => {
                 var proteins: Array<string> = strand.match(/.{3}/g) || [""];
