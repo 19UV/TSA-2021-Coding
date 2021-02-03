@@ -1,1 +1,5 @@
-"" 
+Fix charge calculation (✓)
+Clean Up Code (✓)
+Move translation_table.txt into main index.ts file
+Compile To JS
+  Submit
