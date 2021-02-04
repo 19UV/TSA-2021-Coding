@@ -91,7 +91,7 @@ const CodonTable: Array<Codon> = [ // Added as to not require external files
 ];
 
 /*
-// To read from external translation table
+// To read from external translation table (remove the previous bit of code)
 const CodonTable: Array<Codon> = [];
 const codon_file_data: Array<string> = fs.readFileSync("./translation_table.txt", {"encoding": "utf-8"}) // Read From File (it is a small file, so sync is sufficient)
                                        .replace(/(\r)/g,"") // Add Windows support
